@@ -714,17 +714,17 @@ function displayTaskModal(task) {
             ` : ''}
         </div>
     `;
-    
+
     modal.style.display = 'flex';
-    
+
     // Add event listeners after modal content is created
     const progressSlider = document.getElementById('progressSlider');
     const markCompleteBtn = document.getElementById('markCompleteBtn');
-    
+
     if (progressSlider) {
         console.log('Progress slider found, attaching events'); // Debug log
-        
-        progressSlider.addEventListener('input', function() {
+
+        progressSlider.addEventListener('input', function () {
             console.log('Slider input event:', this.value); // Debug log
             // Update display in real-time as user drags
             const progressValue = document.getElementById('progressValue');
@@ -732,18 +732,18 @@ function displayTaskModal(task) {
                 progressValue.textContent = `${this.value}%`;
             }
         });
-        
-        progressSlider.addEventListener('change', function() {
+
+        progressSlider.addEventListener('change', function () {
             console.log('Slider change event:', this.value); // Debug log
             updateTaskProgress(task._id, this.value);
         });
     } else {
         console.log('Progress slider not found!'); // Debug log
     }
-    
+
     if (markCompleteBtn) {
         console.log('Mark complete button found, attaching event'); // Debug log
-        markCompleteBtn.addEventListener('click', function() {
+        markCompleteBtn.addEventListener('click', function () {
             console.log('Mark complete button clicked'); // Debug log
             quickSetProgress(task._id, 100);
         });
@@ -797,9 +797,9 @@ function filterTasks() {
 // Progress Update Functions
 async function updateTaskProgress(taskId, newProgress) {
     const progressValue = parseInt(newProgress);
-    
+
     console.log('Updating task progress:', taskId, progressValue); // Debug log
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
             method: 'PUT',
@@ -807,25 +807,25 @@ async function updateTaskProgress(taskId, newProgress) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`
             },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 progress: progressValue
             })
         });
-        
+
         const result = await response.json();
-        
+
         console.log('Progress update response:', result); // Debug log
-        
+
         if (result.success) {
             // Update the progress display
             const progressValueElement = document.getElementById('progressValue');
             if (progressValueElement) {
                 progressValueElement.textContent = `${progressValue}%`;
             }
-            
+
             // Show toast notification
             showToast(`Progress updated to ${progressValue}%`, 'success');
-            
+
             // Refresh tasks if we're on the tasks page
             if (currentSection === 'tasks' || currentSection === 'overview') {
                 setTimeout(() => {
@@ -839,9 +839,9 @@ async function updateTaskProgress(taskId, newProgress) {
         console.error('Error updating progress:', error);
         showToast('Error updating progress', 'error');
     }
-}async function quickSetProgress(taskId, progress) {
+} async function quickSetProgress(taskId, progress) {
     console.log('Quick setting progress:', taskId, progress); // Debug log
-    
+
     const slider = document.getElementById('progressSlider');
     if (slider) {
         slider.value = progress;
@@ -851,9 +851,46 @@ async function updateTaskProgress(taskId, newProgress) {
             progressValueElement.textContent = `${progress}%`;
         }
     }
-    
+
     await updateTaskProgress(taskId, progress);
 }
+
+// Simple progress update function for task cards
+window.quickUpdateProgress = async (taskId, progress) => {
+    console.log('Quick updating progress for task:', taskId, 'to', progress);
+    try {
+        const response = await fetch(`/api/tasks/${taskId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ progress: progress })
+        });
+
+        if (response.ok) {
+            const updatedTask = await response.json();
+            console.log('Task progress updated successfully:', updatedTask);
+
+            // Update the task card immediately
+            const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+            if (taskCard) {
+                const progressFill = taskCard.querySelector('.task-progress-fill');
+                const progressText = taskCard.querySelector('.progress-text');
+
+                if (progressFill) progressFill.style.width = `${progress}%`;
+                if (progressText) progressText.textContent = `${progress}% Complete`;
+            }
+
+            showNotification(`Progress updated to ${progress}%`, 'success');
+        } else {
+            throw new Error('Failed to update progress');
+        }
+    } catch (error) {
+        console.error('Error updating progress:', error);
+        showNotification('Failed to update progress', 'error');
+    }
+};
 
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');

@@ -899,3 +899,31 @@ body {
     text-align: center;
     margin-top: 0.25rem;
 }
+
+.progress-quick-actions {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+    justify-content: center;
+}
+
+.btn-quick-progress {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.btn-quick-progress:hover {
+    background: #0056b3;
+    transform: scale(1.05);
+}
+
+.btn-quick-progress:active {
+    transform: scale(0.95);
+}
