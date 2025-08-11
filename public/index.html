@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management API - Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-tasks"></i>
+                <span>TaskManager</span>
+            </div>
+            <div class="nav-user" id="navUser" style="display: none;">
+                <span id="userName"></span>
+                <button class="btn btn-outline" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </nav>
+
+        <!-- Login Form -->
+        <div class="auth-container" id="authContainer">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h2 id="authTitle">Sign In</h2>
+                    <p id="authSubtitle">Welcome back! Please sign in to your account.</p>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sign In
+                    </button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="registerForm" style="display: none;">
+                    <div class="form-group">
+                        <label for="regName">Full Name</label>
+                        <input type="text" id="regName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="regEmail">Email Address</label>
+                        <input type="email" id="regEmail" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="regPassword">Password</label>
+                        <input type="password" id="regPassword" name="password" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="department">Department (Optional)</label>
+                        <input type="text" id="department" name="department">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <i class="fas fa-user-plus"></i>
+                        Create Account
+                    </button>
+                </form>
+
+                <div class="auth-switch">
+                    <p id="authSwitchText">Don't have an account?
+                        <button type="button" id="authSwitchBtn" class="link-btn">Sign up</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard" id="dashboard" style="display: none;">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-menu">
+                    <a href="#" class="menu-item active" data-section="overview">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Overview</span>
+                    </a>
+                    <a href="#" class="menu-item" data-section="tasks">
+                        <i class="fas fa-tasks"></i>
+                        <span>My Tasks</span>
+                    </a>
+                    <a href="#" class="menu-item" data-section="create">
+                        <i class="fas fa-plus"></i>
+                        <span>Create Task</span>
+                    </a>
+                    <a href="#" class="menu-item" data-section="users">
+                        <i class="fas fa-users"></i>
+                        <span>Team</span>
+                    </a>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Overview Section -->
+                <section id="overviewSection" class="content-section">
+                    <div class="section-header">
+                        <h2>Dashboard Overview</h2>
+                        <p>Welcome back! Here's what's happening with your tasks today.</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="totalTasks">0</h3>
+                                <p>Total Tasks</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="completedTasks">0</h3>
+                                <p>Completed</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="inProgressTasks">0</h3>
+                                <p>In Progress</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="overdueTasks">0</h3>
+                                <p>Overdue</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recent-activity">
+                        <h3>Recent Tasks</h3>
+                        <div id="recentTasksList" class="tasks-list">
+                            <!-- Recent tasks will be populated here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tasks Section -->
+                <section id="tasksSection" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2>My Tasks</h2>
+                        <div class="section-actions">
+                            <select id="statusFilter" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="todo">To Do</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="review">Review</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                            <select id="priorityFilter" class="form-select">
+                                <option value="">All Priority</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="tasksList" class="tasks-grid">
+                        <!-- Tasks will be populated here -->
+                    </div>
+                </section>
+
+                <!-- Create Task Section -->
+                <section id="createSection" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2>Create New Task</h2>
+                        <p>Fill in the details below to create a new task.</p>
+                    </div>
+
+                    <form id="createTaskForm" class="task-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="taskTitle">Task Title *</label>
+                                <input type="text" id="taskTitle" name="title" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="taskPriority">Priority</label>
+                                <select id="taskPriority" name="priority">
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="taskDescription">Description *</label>
+                            <textarea id="taskDescription" name="description" rows="4" required></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="taskDueDate">Due Date</label>
+                                <input type="datetime-local" id="taskDueDate" name="dueDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="taskAssignee">Assign To</label>
+                                <select id="taskAssignee" name="assignedTo">
+                                    <option value="">Unassigned</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="taskCategory">Category</label>
+                                <select id="taskCategory" name="category">
+                                    <option value="task">Task</option>
+                                    <option value="bug">Bug</option>
+                                    <option value="feature">Feature</option>
+                                    <option value="improvement">Improvement</option>
+                                    <option value="research">Research</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="taskHours">Estimated Hours</label>
+                                <input type="number" id="taskHours" name="estimatedHours" min="0" max="1000">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="taskProgress">Progress (%)</label>
+                                <input type="number" id="taskProgress" name="progress" min="0" max="100" value="0">
+                                <small class="text-muted">Enter progress as a percentage (0-100)</small>
+                            </div>
+                            <div class="form-group">
+                                <!-- Empty for spacing -->
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Create Task
+                        </button>
+                    </form>
+                </section>
+
+                <!-- Users Section -->
+                <section id="usersSection" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2>Team Members</h2>
+                        <p>View and manage team members.</p>
+                    </div>
+
+                    <div id="usersList" class="users-grid">
+                        <!-- Users will be populated here -->
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading...</p>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toastContainer" class="toast-container"></div>
+
+        <!-- Task Modal -->
+        <div id="taskModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modalTitle">Task Details</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Task details will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.IO Client -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
