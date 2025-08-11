@@ -18,6 +18,8 @@ const toastContainer = document.getElementById('toastContainer');
 // Initialize Application
 document.addEventListener('DOMContentLoaded', function () {
     initializeEventListeners();
+    initializeKeyboardShortcuts();
+    initializeEasterEggs();
 
     if (authToken) {
         validateToken();
@@ -25,6 +27,106 @@ document.addEventListener('DOMContentLoaded', function () {
         showAuthContainer();
     }
 });
+
+// Keyboard Shortcuts
+function initializeKeyboardShortcuts() {
+    document.addEventListener('keydown', function (e) {
+        // Ctrl/Cmd + N = New Task
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n' && currentUser) {
+            e.preventDefault();
+            openCreateTaskModal();
+            showNotification('🚀 Ready to create something awesome!', 'info');
+        }
+
+        // Ctrl/Cmd + / = Help
+        if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+            e.preventDefault();
+            showKeyboardShortcuts();
+        }
+
+        // Escape = Close modals
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+
+        // Ctrl/Cmd + K = Quick search (future feature)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            showNotification('🔍 Quick search coming soon!', 'info');
+        }
+    });
+}
+
+// Easter Eggs
+function initializeEasterEggs() {
+    let konamiCode = [];
+    const konami = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65]; // Up Up Down Down Left Right Left Right B A
+
+    document.addEventListener('keydown', function (e) {
+        konamiCode.push(e.keyCode);
+        if (konamiCode.length > 10) konamiCode.shift();
+
+        if (konamiCode.join('') === konami.join('')) {
+            activateEasterEgg();
+        }
+    });
+
+    // Click counter for logo
+    let clickCount = 0;
+    const logo = document.querySelector('.logo');
+    if (logo) {
+        logo.addEventListener('click', function () {
+            clickCount++;
+            if (clickCount === 7) {
+                showNotification('🎉 You found the secret! Have some confetti!', 'success');
+                createConfetti();
+                clickCount = 0;
+            }
+        });
+    }
+}
+
+function activateEasterEgg() {
+    showNotification('🎮 Konami Code activated! You are now a Task Master!', 'success');
+    document.body.style.filter = 'hue-rotate(180deg)';
+    setTimeout(() => {
+        document.body.style.filter = '';
+    }, 3000);
+}
+
+function createConfetti() {
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'];
+    for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.style.cssText = `
+                position: fixed;
+                top: -10px;
+                left: ${Math.random() * 100}%;
+                width: 10px;
+                height: 10px;
+                background: ${colors[Math.floor(Math.random() * colors.length)]};
+                pointer-events: none;
+                z-index: 10000;
+                border-radius: 50%;
+                animation: fall 3s linear forwards;
+            `;
+            document.body.appendChild(confetti);
+            setTimeout(() => confetti.remove(), 3000);
+        }, i * 50);
+    }
+}
+
+function showKeyboardShortcuts() {
+    showNotification(`
+        🎯 Keyboard Shortcuts:<br>
+        • Ctrl+N: New Task<br>
+        • Ctrl+/: Show this help<br>
+        • Escape: Close modals<br>
+        • Ctrl+K: Quick search (soon!)<br>
+        • Click logo 7 times for surprise 🎉
+    `, 'info', 8000);
+}
 
 // Event Listeners
 function initializeEventListeners() {
@@ -334,6 +436,8 @@ async function loadUserData() {
 
 async function loadDashboardData() {
     try {
+        showWelcomeMessage();
+
         const [statsResponse, tasksResponse] = await Promise.all([
             fetch(`${API_BASE_URL}/tasks/stats`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
@@ -357,6 +461,39 @@ async function loadDashboardData() {
         }
     } catch (error) {
         console.error('Error loading dashboard data:', error);
+    }
+}
+
+function showWelcomeMessage() {
+    const currentHour = new Date().getHours();
+    let greeting, emoji;
+
+    if (currentHour < 12) {
+        greeting = "Good morning";
+        emoji = "🌅";
+    } else if (currentHour < 17) {
+        greeting = "Good afternoon";
+        emoji = "☀️";
+    } else {
+        greeting = "Good evening";
+        emoji = "🌆";
+    }
+
+    const messages = [
+        `${greeting}, ${currentUser?.name}! Ready to crush some tasks? ${emoji}`,
+        `Hey there, productivity champion! ${emoji}`,
+        `Welcome back, task master! Time to get things done! ${emoji}`,
+        `${greeting}! Let's make today awesome! ${emoji}`
+    ];
+
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+
+    // Only show welcome message once per session
+    if (!sessionStorage.getItem('welcomeShown')) {
+        setTimeout(() => {
+            showNotification(randomMessage, 'info', 4000);
+        }, 1000);
+        sessionStorage.setItem('welcomeShown', 'true');
     }
 }
 
@@ -749,6 +886,27 @@ function displayTaskModal(task) {
         });
     } else {
         console.log('Mark complete button not found!'); // Debug log
+    }
+}
+
+function openCreateTaskModal() {
+    // Focus on the create task section
+    handleNavigation({ target: { dataset: { section: 'create' } } });
+
+    // Add a fun animation to the form
+    const createTaskForm = document.getElementById('createTaskForm');
+    if (createTaskForm) {
+        createTaskForm.style.transform = 'scale(1.02)';
+        createTaskForm.style.transition = 'transform 0.2s ease';
+        setTimeout(() => {
+            createTaskForm.style.transform = 'scale(1)';
+        }, 200);
+    }
+
+    // Focus on the title field
+    const titleField = document.getElementById('taskTitle');
+    if (titleField) {
+        titleField.focus();
     }
 }
 

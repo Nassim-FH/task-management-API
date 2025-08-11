@@ -140,7 +140,7 @@ taskSchema.virtual('daysUntilDue').get(function () {
 
 // Virtual for task completion percentage based on subtasks
 taskSchema.virtual('completionPercentage').get(function () {
-    if (this.subtasks.length === 0) return this.progress;
+    if (!this.subtasks || this.subtasks.length === 0) return this.progress || 0;
 
     const completedSubtasks = this.subtasks.filter(subtask => subtask.completed).length;
     return Math.round((completedSubtasks / this.subtasks.length) * 100);
